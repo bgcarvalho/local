@@ -26,15 +26,20 @@ def convert(path, codec, ffmpegbin):
     if ffmpegbin is None:
         ffmpegbin = "ffmpeg"
     for root, dirs, files in os.walk(path):
+        print(root)
         for f in files:
             if ".dav" in f:
+                infile = os.path.join(root, f)
                 out = pattern.sub("", f[:-4]) + ".mp4"
+                #out = out[:6] + '-' + out[6:12] + '_' + out[12:] + '.mp4'
+                out = out[:6] + '-' + out[6:12] + '.mp4'
+                out = os.path.join(root, out)
                 print("Converting")
-                print(f)
-                print(out)
+                print('  From', infile)
+                print('  To  ', out)
                 cp = run(
                     [
-                        ffmpeg,
+                        ffmpegbin,
                         "-y",
                         "-i",
                         infile,
@@ -43,12 +48,15 @@ def convert(path, codec, ffmpegbin):
                         "-crf",
                         "24",
                         out,
-                    ]
+                    ],
+                    capture_output=True,
+                    encoding='utf8',
                 )
                 if cp.returncode == 0:
-                    print("success")
+                    print("  ..success!")
                 else:
-                    print("error")
+                    print("Error:")
+                    print(cp.stderr)
                 print("")
         for d in dirs:
             convert(d, codec, ffmpegbin)
